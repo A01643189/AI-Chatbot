@@ -31,7 +31,7 @@ export default function Chatbot() {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen bg-gray-100">
-            <h1 className="text-2xl font-bold mb-4">AI Chatbot</h1>
+            <h1 className="text-5xl font-bold mb-4 text-black">AI Chatbot</h1>
             <div className="w-full max-w-2xl h-[60vh] bg-white border border-gray-300 p-4 rounded-lg overflow-y-auto">
                 {messages.map((msg, index) => (
                     <div
@@ -48,7 +48,7 @@ export default function Chatbot() {
             </div>
             <div className="mt-4 flex w-full max-w-2xl gap-2">
                 <input
-                    className="flex-1 p-2 border border-gray-300 rounded-md"
+                    className="flex-1 p-2 border border-gray-300 rounded-md text-black"
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
