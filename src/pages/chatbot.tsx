@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
+import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore'
+import { db } from '@/lib/firebase'
 
 type Message = {
-    role: 'user' | 'assistant'
+    role: 'user' | 'assistant' | 'typing'
     content: string
 }
 
@@ -10,23 +12,94 @@ export default function Chatbot() {
         { role: 'assistant', content: 'Hello! How can I assist you today?' }
     ])
     const [input, setInput] = useState<string>('')
+    const [sessionId, setSessionId] = useState<string>('') // Store user session
+    const [isTyping, setIsTyping] = useState<boolean>(false) // Track AI typing state
+    const chatEndRef = useRef<HTMLDivElement>(null) // Reference for auto-scrolling
+
+    // 🎯 Generate session ID client-side
+    useEffect(() => {
+        let storedSessionId = localStorage.getItem('sessionId')
+        if (!storedSessionId) {
+            storedSessionId = Date.now().toString()
+            localStorage.setItem('sessionId', storedSessionId)
+        }
+        setSessionId(storedSessionId)
+    }, [])
+
+    // 🛠 Load chat history for this session
+    useEffect(() => {
+        if (!sessionId) return
+
+        const loadChatHistory = async () => {
+            const q = query(
+                collection(db, `chats/${sessionId}/messages`),
+                orderBy('createdAt', 'asc')
+            )
+            const querySnapshot = await getDocs(q)
+            const loadedMessages: Message[] = querySnapshot.docs.map(doc => doc.data() as Message)
+
+            if (loadedMessages.length > 0) {
+                setMessages(loadedMessages)
+            }
+        }
+
+        loadChatHistory()
+    }, [sessionId])
+
+    // 🔽 Auto-scroll to latest message
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+    }, [messages])
 
     const sendMessage = async () => {
-        if (!input.trim()) return
+        if (!input.trim() || !sessionId || isTyping) return
 
-        const newMessages: Message[] = [...messages, { role: 'user', content: input }]
+        const userMessage: Message = { role: 'user', content: input }
+        const newMessages: Message[] = [...messages, userMessage]
         setMessages(newMessages)
         setInput('')
 
-        const response = await fetch('/api/chat', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ messages: newMessages }),
+        // Save user message in Firestore
+        await addDoc(collection(db, `chats/${sessionId}/messages`), {
+            ...userMessage,
+            createdAt: Date.now(),
         })
 
-        const data = await response.json()
+        // Show AI typing indicator
+        setIsTyping(true)
+        setMessages([...newMessages, { role: 'typing', content: 'AI is typing...' }])
 
-        setMessages([...newMessages, { role: 'assistant', content: data.reply }])
+        try {
+            const response = await fetch('/api/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ messages: newMessages }),
+            })
+
+            const data = await response.json()
+
+            // Remove typing indicator and add AI response
+            const updatedMessages: Message[] = [
+                ...newMessages.filter(msg => msg.role !== 'typing'),
+                { role: 'assistant', content: data.reply }
+            ]
+            setMessages(updatedMessages)
+            setIsTyping(false)
+
+            // Save AI message to Firebase
+            await addDoc(collection(db, `chats/${sessionId}/messages`), {
+                role: 'assistant',
+                content: data.reply,
+                createdAt: Date.now(),
+            })
+        } catch (error) {
+            console.error('❌ Error fetching AI response:', error)
+            setMessages([
+                ...newMessages.filter(msg => msg.role !== 'typing'),
+                { role: 'assistant', content: 'Sorry, something went wrong. Try again later.' }
+            ])
+            setIsTyping(false)
+        }
     }
 
     return (
@@ -39,12 +112,16 @@ export default function Chatbot() {
                         className={`mb-2 p-2 max-w-[80%] rounded-lg ${
                             msg.role === 'user'
                                 ? 'bg-blue-500 text-white self-end ml-auto'
+                                : msg.role === 'typing'
+                                ? 'bg-gray-300 text-gray-600 self-start mr-auto italic'
                                 : 'bg-gray-200 text-gray-900 self-start mr-auto'
                         }`}
                     >
                         {msg.content}
                     </div>
                 ))}
+                {/* Invisible div to auto-scroll to latest message */}
+                <div ref={chatEndRef} />
             </div>
             <div className="mt-4 flex w-full max-w-2xl gap-2">
                 <input
@@ -57,8 +134,9 @@ export default function Chatbot() {
                 <button
                     className="p-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
                     onClick={sendMessage}
+                    disabled={isTyping} // Disable send button while AI is typing
                 >
-                    Send
+                    {isTyping ? '...' : 'Send'}
                 </button>
             </div>
         </div>
