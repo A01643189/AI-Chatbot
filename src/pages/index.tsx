@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import DarkModeToggle from "@/components/DarkmodeToggle"
+import Navbar from "@/components/Navbar" // Import Navbar
 
 export default function Portfolio() {
   const router = useRouter()
@@ -14,11 +14,12 @@ export default function Portfolio() {
         color: "var(--foreground)"
       }}
     >
-      <DarkModeToggle />
+      {/* Navbar at the top */}
+      <Navbar />
 
       {/* Hero Section with Animations */}
       <motion.h1
-        className="text-5xl font-extrabold mb-6 text-center"
+        className="text-5xl font-extrabold mt-20 mb-6 text-center"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}

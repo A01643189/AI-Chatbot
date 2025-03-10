@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from 'react'
 import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { useTheme } from '@/context/theme-provider' // Import theme hook
+import Navbar from "@/components/Navbar" // Import Navbar
 
 type Message = {
     role: 'user' | 'assistant' | 'typing'
@@ -105,6 +106,9 @@ export default function Chatbot() {
                 color: "var(--foreground)"
             }}
         >
+
+        <Navbar />
+
             <h1 className="text-5xl font-bold mb-4">AI Chatbot</h1>
             <div
                 className="w-full max-w-2xl h-[60vh] border border-gray-300 p-4 rounded-lg overflow-y-auto transition-colors"
