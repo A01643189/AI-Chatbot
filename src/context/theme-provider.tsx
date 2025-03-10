@@ -8,23 +8,16 @@ const ThemeContext = createContext<{ theme: Theme; toggleTheme: () => void }>({
 })
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme | null>(null) // Prevent hydration mismatch
+  const [theme, setTheme] = useState<Theme | null>(null)
 
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") as Theme
-    setTheme(storedTheme || "light") // Load stored theme
+    setTheme(storedTheme || "light")
   }, [])
 
   useEffect(() => {
     if (theme) {
-      document.documentElement.dataset.theme = theme
-      document.documentElement.style.setProperty("--background", theme === "light" ? "#ffffff" : "#0a0a0a")
-      document.documentElement.style.setProperty("--foreground", theme === "light" ? "#171717" : "#ededed")
-
-      // 🚀 Apply theme to <body> to force style update
-      document.body.style.backgroundColor = theme === "light" ? "#ffffff" : "#0a0a0a"
-      document.body.style.color = theme === "light" ? "#171717" : "#ededed"
-
+      document.documentElement.setAttribute("data-theme", theme) // ✅ Update global theme attribute
       localStorage.setItem("theme", theme)
     }
   }, [theme])

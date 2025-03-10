@@ -5,11 +5,9 @@
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #121212; /* 🔥 Softer dark mode background */
-    --foreground: #e0e0e0; /* Slightly dimmed text for better readability */
-  }
+[data-theme="dark"] {
+  --background: #121212; /* 🔥 Softer dark mode background */
+  --foreground: #e0e0e0; /* Slightly dimmed text for better readability */
 }
 
 body {
