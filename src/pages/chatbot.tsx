@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef } from 'react'
-import { collection, addDoc, getDocs, query, orderBy } from 'firebase/firestore'
+import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { useTheme } from '@/context/theme-provider' // Import theme hook
-import Navbar from "@/components/Navbar" // Import Navbar
+import { useTheme } from '@/context/theme-provider'
+import Navbar from "@/components/Navbar"
+import { motion } from "framer-motion"
 
 type Message = {
     role: 'user' | 'assistant' | 'typing'
@@ -10,7 +11,7 @@ type Message = {
 }
 
 export default function Chatbot() {
-    const { theme } = useTheme() // Get current theme
+    const { theme } = useTheme()
     const [messages, setMessages] = useState<Message[]>([
         { role: 'assistant', content: 'Hello! How can I assist you today?' }
     ])
@@ -98,6 +99,22 @@ export default function Chatbot() {
         }
     }
 
+    // 🗑 **Clear chat memory**
+    const clearChatHistory = async () => {
+        if (!sessionId) return
+
+        // Delete all messages from Firestore
+        const q = query(collection(db, `chats/${sessionId}/messages`))
+        const querySnapshot = await getDocs(q)
+
+        querySnapshot.forEach(async (docSnapshot) => {
+            await deleteDoc(doc(db, `chats/${sessionId}/messages`, docSnapshot.id))
+        })
+
+        // Reset local state
+        setMessages([{ role: 'assistant', content: 'Hello! How can I assist you today?' }])
+    }
+
     return (
         <div
             className="flex flex-col items-center justify-center h-screen transition-colors"
@@ -106,20 +123,47 @@ export default function Chatbot() {
                 color: "var(--foreground)"
             }}
         >
+            <Navbar />
 
-        <Navbar />
+            <motion.h1
+                className="text-4xl font-bold mt-16 mb-4"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+            >
+                AI Chatbot 🤖
+            </motion.h1>
 
-            <h1 className="text-5xl font-bold mb-4">AI Chatbot</h1>
-            <div
-                className="w-full max-w-2xl h-[60vh] border border-gray-300 p-4 rounded-lg overflow-y-auto transition-colors"
+            {/* Refresh Chat Button */}
+            <motion.button
+                className="mb-4 p-2 px-4 rounded-md shadow-md transition hover:opacity-80"
                 style={{
-                    backgroundColor: "var(--background)",
-                    color: "var(--foreground)",
-                    border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.2)"
+                    backgroundColor: "#ff4757",
+                    color: "white",
                 }}
+                onClick={clearChatHistory}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+            >
+                🔄 Reset Chat
+            </motion.button>
+
+            {/* Chatbox */}
+            <motion.div
+                className="w-full max-w-2xl h-[60vh] border p-4 rounded-lg overflow-y-auto transition-colors shadow-md"
+                style={{
+                    backgroundColor: theme === "dark" ? "#1e1e1e" : "#f9f9f9",
+                    color: theme === "dark" ? "#e0e0e0" : "#171717",
+                    border: theme === "dark"
+                        ? "1px solid rgba(255, 255, 255, 0.2)"
+                        : "1px solid rgba(0, 0, 0, 0.1)"
+                }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
             >
                 {messages.map((msg, index) => (
-                    <div
+                    <motion.div
                         key={index}
                         className={`mb-2 p-2 max-w-[80%] rounded-lg transition-all`}
                         style={{
@@ -127,26 +171,38 @@ export default function Chatbot() {
                             color: msg.role === 'user' ? "white" : msg.role === 'typing' ? "#AAA" : "black",
                             alignSelf: msg.role === 'user' ? "flex-end" : "flex-start",
                         }}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
                     >
                         {msg.content}
-                    </div>
+                    </motion.div>
                 ))}
                 <div ref={chatEndRef} />
-            </div>
-            <div className="mt-4 flex w-full max-w-2xl gap-2">
+            </motion.div>
+
+            {/* Input Box */}
+            <motion.div
+                className="mt-4 flex w-full max-w-2xl gap-2"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6 }}
+            >
                 <input
                     className="flex-1 p-2 border rounded-md transition-colors"
                     style={{
-                        backgroundColor: "var(--background)",
-                        color: "var(--foreground)",
-                        border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.2)"
+                        backgroundColor: theme === "dark" ? "#1e1e1e" : "#ffffff",
+                        color: theme === "dark" ? "#e0e0e0" : "#171717",
+                        border: theme === "dark"
+                            ? "1px solid rgba(255, 255, 255, 0.2)"
+                            : "1px solid rgba(0, 0, 0, 0.2)"
                     }}
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     placeholder="Type your message..."
                 />
-                <button
+                <motion.button
                     className="p-2 rounded-md hover:opacity-80 transition"
                     style={{
                         backgroundColor: "#007BFF",
@@ -155,10 +211,12 @@ export default function Chatbot() {
                     }}
                     onClick={sendMessage}
                     disabled={isTyping}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                 >
                     {isTyping ? '...' : 'Send'}
-                </button>
-            </div>
+                </motion.button>
+            </motion.div>
         </div>
     )
 }

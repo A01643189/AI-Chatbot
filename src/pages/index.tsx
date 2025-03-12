@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import Navbar from "@/components/Navbar" // Import Navbar
+import Navbar from "@/components/Navbar" 
 
 export default function Portfolio() {
   const router = useRouter()

@@ -17,7 +17,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (theme) {
-      document.documentElement.setAttribute("data-theme", theme) // ✅ Update global theme attribute
+      document.documentElement.setAttribute("data-theme", theme) // Set theme attribute
       localStorage.setItem("theme", theme)
     }
   }, [theme])
