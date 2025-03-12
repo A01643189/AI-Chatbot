@@ -19,6 +19,7 @@ export default function Chatbot() {
     const [sessionId, setSessionId] = useState<string>('')
     const [isTyping, setIsTyping] = useState<boolean>(false)
     const chatEndRef = useRef<HTMLDivElement>(null)
+    const inputRef = useRef<HTMLInputElement>(null) // 🔥 Input reference for focus
 
     useEffect(() => {
         let storedSessionId = localStorage.getItem('sessionId')
@@ -96,6 +97,14 @@ export default function Chatbot() {
                 { role: 'assistant', content: 'Sorry, something went wrong. Try again later.' }
             ])
             setIsTyping(false)
+        }
+    }
+
+    // **Handle Enter Key Press**
+    const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === "Enter") {
+            event.preventDefault()
+            sendMessage()
         }
     }
 
@@ -189,6 +198,7 @@ export default function Chatbot() {
                 transition={{ delay: 0.2, duration: 0.6 }}
             >
                 <input
+                    ref={inputRef}
                     className="flex-1 p-2 border rounded-md transition-colors"
                     style={{
                         backgroundColor: theme === "dark" ? "#1e1e1e" : "#ffffff",
@@ -200,6 +210,7 @@ export default function Chatbot() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyPress} // 🔥 Listen for Enter key press
                     placeholder="Type your message..."
                 />
                 <motion.button
