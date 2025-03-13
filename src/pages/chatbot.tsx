@@ -21,7 +21,7 @@ export default function Chatbot() {
     const chatEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
-    const [provider, setProvider] = useState<'openai' | 'deepseek'>('openai'); // ✅ Default: OpenAI
+    const [provider, setProvider] = useState<'openai' | 'deepseek' | 'gemini'>('openai'); // ✅ Default: OpenAI
     const [model, setModel] = useState<string>('gpt-3.5-turbo'); // ✅ Default OpenAI Model
 
     useEffect(() => {
@@ -55,41 +55,45 @@ export default function Chatbot() {
 
     const sendMessage = async () => {
         if (!input.trim() || !sessionId || isTyping) return;
-
+    
         const userMessage: Message = { role: 'user', content: input };
         const newMessages: Message[] = [...messages, userMessage];
         setMessages(newMessages);
         setInput('');
-
+    
         await addDoc(collection(db, `chats/${sessionId}/messages`), {
             ...userMessage,
             createdAt: Date.now(),
         });
-
+    
         setIsTyping(true);
         setMessages([...newMessages, { role: 'typing', content: 'AI is typing...' }]);
-
+    
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ messages: newMessages, provider, model }),
             });
-
+    
             const data = await response.json();
-
+    
+            let reply = data.reply?.trim() || "Sorry, I couldn't generate a response.";
+    
             const updatedMessages: Message[] = [
                 ...newMessages.filter(msg => msg.role !== 'typing'),
-                { role: 'assistant', content: data.reply }
+                { role: 'assistant', content: reply }
             ];
             setMessages(updatedMessages);
             setIsTyping(false);
-
+    
+            // ✅ Ensure we don't store `undefined` values in Firestore
             await addDoc(collection(db, `chats/${sessionId}/messages`), {
                 role: 'assistant',
-                content: data.reply,
+                content: reply,
                 createdAt: Date.now(),
             });
+    
         } catch (error) {
             console.error('❌ Error fetching AI response:', error);
             setMessages([
@@ -99,11 +103,25 @@ export default function Chatbot() {
             setIsTyping(false);
         }
     };
+    
 
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
             event.preventDefault();
             sendMessage();
+        }
+    };
+
+    const toggleProvider = () => {
+        if (provider === "openai") {
+            setProvider("deepseek");
+            setModel("deepseek-chat");
+        } else if (provider === "deepseek") {
+            setProvider("gemini");
+            setModel("gemini-1.5-pro-latest");
+        } else {
+            setProvider("openai");
+            setModel("gpt-3.5-turbo");
         }
     };
 
@@ -128,22 +146,16 @@ export default function Chatbot() {
                 AI Chatbot 🤖
             </motion.h1>
 
-            {/* AI Model & Provider Selection */}
+            {/* AI Provider Selection */}
             <div className="mb-4 flex gap-4">
-                <motion.button
-                    className="p-2 px-4 rounded-md shadow-md transition hover:opacity-80"
-                    style={{ backgroundColor: provider === "openai" ? "#007BFF" : "#ff4757", color: "white" }}
-                    onClick={() => setProvider(provider === 'openai' ? 'deepseek' : 'openai')}
+                <motion.button className="p-2 px-4 rounded-md shadow-md transition hover:opacity-80"
+                    style={{ backgroundColor: provider === "openai" ? "#007BFF" : provider === "deepseek" ? "#FFA500" : "#ff4757", color: "white" }}
+                    onClick={toggleProvider}
                 >
-                    {provider === "openai" ? "🔄 Switch to DeepSeek AI" : "🔄 Switch to OpenAI"}
+                    {provider === "openai" ? "🔄 Switch to DeepSeek AI" :
+                     provider === "deepseek" ? "🔄 Switch to Gemini" :
+                     "🔄 Switch to OpenAI"}
                 </motion.button>
-
-                {provider === "openai" && (
-                    <select className="p-2 rounded-md border" value={model} onChange={(e) => setModel(e.target.value)}>
-                        <option value="gpt-3.5-turbo">GPT-3.5</option>
-                        <option value="gpt-4">GPT-4</option>
-                    </select>
-                )}
             </div>
 
             {/* Refresh Chat Button */}
