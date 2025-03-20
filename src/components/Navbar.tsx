@@ -1,9 +1,11 @@
 import Link from "next/link"
 import { useTheme } from "@/context/theme-provider"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
+import { useState } from "react";
 
 export default function Navbar() {
   const { theme, toggleTheme } = useTheme()
+  const [showMenu, setShowMenu] = useState(false);
 
   return (
     <motion.nav
@@ -17,43 +19,78 @@ export default function Navbar() {
         borderBottom: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.1)",
       }}
     >
-      {/* Left Section: Logo / Home */}
-      <motion.div
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-      >
-        <Link href="/">
-          <span className="text-lg font-bold cursor-pointer hover:opacity-80 transition">
-            🚀 My Portfolio
-          </span>
-        </Link>
-      </motion.div>
+      {/* Left Section: Hamburger Menu on Mobile */}
+      <div className="md:hidden relative">
+          <button 
+              onClick={() => setShowMenu(!showMenu)} 
+              className="text-2xl focus:outline-none"
+          >
+              {showMenu ? "✖️" : "☰"} {/* X for close, ☰ for open */}
+          </button>
 
-      {/* Center Section: Navigation Links */}
-      <div className="hidden md:flex gap-6 text-lg">
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <Link href="/chatbot">
-            <span className="cursor-pointer hover:opacity-80 transition">🤖 Chatbot</span>
-          </Link>
-        </motion.div>
+          {/* Dropdown Menu */}
+          <AnimatePresence>
+              {showMenu && (
+                  <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 w-48 bg-white dark:bg-black border rounded-md shadow-md flex flex-col"
+                  >
+                      {/* Move "My Portfolio" Inside Menu on Mobile */}
+                      <Link href="/">
+                          <span 
+                              className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              onClick={() => setShowMenu(false)}
+                          >
+                              🚀 My Portfolio
+                          </span>
+                      </Link>
+
+                      {/* Chatbot Link */}
+                      <Link href="/chatbot">
+                          <span 
+                              className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              onClick={() => setShowMenu(false)}
+                          >
+                              🤖 Chatbot
+                          </span>
+                      </Link>
+                  </motion.div>
+              )}
+          </AnimatePresence>
       </div>
 
-      {/* Right Section: Theme Toggle */}
+      {/* Left Section: Navigation Links (Desktop Only) */}
+      <div className="hidden md:flex gap-6 text-lg items-center">
+          {/* Portfolio Link (Visible on Desktop) */}
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link href="/">
+                  <span className="cursor-pointer font-bold hover:opacity-80 transition">🚀 My Portfolio</span>
+              </Link>
+          </motion.div>
+
+          {/* Chatbot Link */}
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link href="/chatbot">
+                  <span className="cursor-pointer hover:opacity-80 transition">🤖 Chatbot</span>
+              </Link>
+          </motion.div>
+      </div>
+
+      {/* Right Section: Theme Toggle (Moved to the Right) */}
       <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={toggleTheme}
-        className="p-2 rounded-full transition"
-        style={{
-          backgroundColor: theme === "dark" ? "#222" : "#f0f0f0",
-          color: theme === "dark" ? "#fff" : "#000",
-          border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.2)"
-        }}
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+          onClick={toggleTheme}
+          className="p-2 rounded-full transition ml-auto"
+          style={{
+              backgroundColor: theme === "dark" ? "#222" : "#f0f0f0",
+              color: theme === "dark" ? "#fff" : "#000",
+              border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.2)"
+          }}
       >
-        {theme === "light" ? "🌙" : "☀️"}
+          {theme === "light" ? "🌙" : "☀️"}
       </motion.button>
     </motion.nav>
   )
