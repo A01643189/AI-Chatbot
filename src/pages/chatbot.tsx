@@ -3,11 +3,44 @@ import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from 'fir
 import { db } from '@/lib/firebase';
 import { useTheme } from '@/context/theme-provider';
 import Navbar from "@/components/Navbar";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 
 type Message = {
     role: 'user' | 'assistant' | 'typing';
     content: string;
+};
+
+const modelOptions = {
+    openai: ["gpt-3.5-turbo"],
+    deepseek: ["deepseek-chat"],
+    gemini: ["gemini-1.5-pro-latest"],
+    claude: ["claude-3-5-sonnet-20241022"]
+};
+
+const modelLogos:Record<string, { light: string; dark: string }> = {
+    openai: {
+        light: "/openai-light.png",
+        dark: "/openai-dark.png",
+    },
+    deepseek: {
+        light: "/deepseek.png",
+        dark: "/deepseek.png",
+    },
+    gemini: {
+        light: "/gemini.png",
+        dark: "/gemini.png",
+    },
+    claude: {
+        light: "/claude.png",
+        dark: "/claude.png",
+    },
+};
+
+const logoSizes: Record<string, string> = {
+    openai: "w-10 h-10",  
+    deepseek: "w-12 h-12", 
+    gemini: "w-10 h-10",   
+    claude: "w-12 h-10",   
 };
 
 export default function Chatbot() {
@@ -23,6 +56,10 @@ export default function Chatbot() {
 
     const [provider, setProvider] = useState<'openai' | 'deepseek' | 'gemini' | 'claude'>('openai');
     const [model, setModel] = useState<string>('gpt-3.5-turbo');
+    const [showDropdown, setShowDropdown] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    const modelLogo = modelLogos[provider] || "openai.png";
 
     useEffect(() => {
         let storedSessionId = localStorage.getItem('sessionId');
@@ -52,6 +89,16 @@ export default function Chatbot() {
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setShowDropdown(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const sendMessage = async () => {
         if (!input.trim() || !sessionId || isTyping) return;
@@ -127,61 +174,138 @@ export default function Chatbot() {
         <div className="flex flex-col items-center justify-center h-screen transition-colors" style={{ backgroundColor: "var(--background)", color: "var(--foreground)" }}>
             <Navbar />
 
-            <motion.h1 className="text-4xl font-bold mt-16 mb-4" initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                AI Chatbot 🤖
+            <motion.h1 className="text-4xl font-bold mt-16 mb-4 flex items-center gap-2"
+                initial={{ opacity: 0, y: -20 }} 
+                animate={{ opacity: 1, y: 0 }} 
+                transition={{ duration: 0.6 }}
+            >
+                AI Chatbot 
+                <img
+                    src={theme === "dark" ? modelLogos[provider].dark : modelLogos[provider].light}
+                    alt={`${provider} logo`}
+                    className={`${logoSizes[provider]}`}
+                />
             </motion.h1>
 
-            {/* AI Provider Selection & Model Display */}
-            <div className="mb-4 flex flex-col items-center gap-2">
-                <span className="text-lg font-semibold">Current Model: <span className="text-blue-500">{model}</span></span>
-                <select
-                    className="p-2 rounded-md border border-gray-300 shadow-md"
-                    value={provider}
-                    onChange={(e) => {
-                        const selectedProvider = e.target.value as 'openai' | 'deepseek' | 'gemini' | 'claude';
-                        setProvider(selectedProvider);
-
-                        if (selectedProvider === "openai") {
-                            setModel("gpt-3.5-turbo");
-                        } else if (selectedProvider === "deepseek") {
-                            setModel("deepseek-chat");
-                        } else if (selectedProvider === "gemini") {
-                            setModel("gemini-1.5-pro-latest");
-                        } else if (selectedProvider === "claude") {
-                            setModel("claude-3-5-sonnet-20241022"); // ✅ Ensure this is the correct model
-                        }
-                    }}
+            {/* Provider & Model Selection Dropdown */}
+            <div ref={dropdownRef} className="relative mb-4 flex flex-col items-center gap-2">
+                <button 
+                    className={`p-2 rounded-md shadow-md hover:opacity-80 transition-all ${
+                        theme === "dark" ? "bg-neutral-800 text-white" : "bg-gray-200 text-black"
+                    }`} 
+                    onClick={() => setShowDropdown(!showDropdown)}
                 >
-                    <option value="openai">OpenAI (GPT-3.5/GPT-4)</option>
-                    <option value="deepseek">DeepSeek AI</option>
-                    <option value="gemini">Gemini 1.5 Pro</option>
-                    <option value="claude">Claude 3.5 Sonnet</option>
-                </select>
+                    <strong>{model}</strong> ▼
+                </button>
 
+                <AnimatePresence>
+                    {showDropdown && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className={`absolute top-full mt-2 w-48 rounded-md shadow-lg transition-all ${
+                                theme === "dark" ? "bg-neutral-800 text-gray-300" : "bg-white text-gray-800"
+                            }`}
+                        
+                        >
+                            {Object.entries(modelOptions).map(([prov, models]) => (
+                                <div key={prov}>
+                                    <p className={`px-3 py-1 text-gray-700 font-bold ${
+                                theme === "dark" ? "text-white" : "text-gray-700"
+                            }`}>{prov.toUpperCase()}</p>
+                                    {models.map((m) => (
+                                        <button
+                                            key={m}
+                                            className={`block w-full px-3 py-2 text-left ${
+                                theme === "dark" ? "hover:bg-neutral-600" : "hover:bg-gray-100"
+                            }`}
+                                            onClick={() => {
+                                                setProvider(prov as "openai" | "deepseek" | "gemini" | "claude");
+                                                setModel(m);
+                                                setShowDropdown(false);
+                                            }}
+                                        >
+                                            {m}
+                                        </button>
+                                    ))}
+                                </div>
+                            ))}
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
-            {/* Refresh Chat Button */}
+            
+            {/* Refresh Chat Button TESTING PURPOSES*/}
+            {/*
             <motion.button className="mb-4 p-2 px-4 rounded-md shadow-md transition hover:opacity-80" style={{ backgroundColor: "#ff4757", color: "white" }} onClick={clearChatHistory} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 🔄 Reset Chat
             </motion.button>
+            */}
 
             {/* Chatbox */}
             <motion.div className="w-full max-w-2xl h-[60vh] border p-4 rounded-lg overflow-y-auto transition-colors shadow-md"
                 style={{ backgroundColor: theme === "dark" ? "#1e1e1e" : "#f9f9f9", color: theme === "dark" ? "#e0e0e0" : "#171717", border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.1)" }}>
-                {messages.map((msg, index) => (
-                    <motion.div key={index} className={`mb-2 p-2 max-w-[80%] rounded-lg transition-all`} style={{ backgroundColor: msg.role === 'user' ? "#007BFF" : "#DDD", color: msg.role === 'user' ? "white" : "black" }}>
-                        {msg.content}
-                    </motion.div>
-                ))}
+                <div className="flex flex-col gap-2">
+                    {messages.map((msg, index) => (
+                        <motion.div 
+                            key={index} 
+                            className={`p-2 rounded-lg transition-all max-w-fit break-words ${
+                                msg.role === 'user' 
+                                    ? "bg-blue-500 text-white self-end ml-auto text-right"  // Align user messages to the right
+                                    : "bg-gray-300 text-black self-start mr-auto text-left" // Align AI messages to the left
+                            }`}
+                            style={{ whiteSpace: "pre-wrap" }} // ✅ Ensures new lines are respected
+                        >
+                            {msg.content}
+                        </motion.div>
+                    ))}
+                </div>
+
+
                 <div ref={chatEndRef} />
             </motion.div>
 
             {/* Input Box */}
             <motion.div className="mt-4 flex w-full max-w-2xl gap-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
-                <input ref={inputRef} className="flex-1 p-2 border rounded-md transition-colors" type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} placeholder="Type your message..." />
+                <input 
+                    ref={inputRef} 
+                    className={`flex-1 p-2 border rounded-md transition-color ${
+                        theme === "dark" ? "text-white" : "text-gray-600"
+                    }`} 
+                    type="text" 
+                    value={input} 
+                    onChange={(e) => setInput(e.target.value)} 
+                    onKeyDown={handleKeyPress} 
+                    placeholder="Type your message..." 
+                />
 
-                <motion.button className="p-2 rounded-md hover:opacity-80 transition" style={{ backgroundColor: "#007BFF", color: "white", opacity: isTyping ? 0.5 : 1 }} onClick={sendMessage} disabled={isTyping} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                    {isTyping ? '...' : 'Send'}
+                <motion.button 
+                    className="flex items-center justify-center rounded-full border-2 transition-all"
+                    style={{ 
+                        borderColor: theme === "dark" ? "white" : "black", 
+                        color: theme === "dark" ? "white" : "black", 
+                        width: "40px", 
+                        height: "40px", 
+                        backgroundColor: "transparent", // ✅ No fill color
+                    }} 
+                    onClick={sendMessage} 
+                    disabled={isTyping} 
+                    whileHover={{ scale: 1.1, transition: { duration: 0.15 } }} // ⚡ Faster hover animation
+                    whileTap={{ scale: 0.9, transition: { duration: 0.1 } }} // ⚡ Faster tap animation
+                >
+                    {isTyping ? '...' : (
+                        <svg 
+                            xmlns="http://www.w3.org/2000/svg" 
+                            width="24" 
+                            height="24" 
+                            viewBox="0 0 24 24" 
+                            fill="currentColor"
+                        >
+                            <path d="M2 21L23 12 2 3v7l15 2-15 2v7z"/>
+                        </svg>
+                    )}
                 </motion.button>
             </motion.div>
         </div>
