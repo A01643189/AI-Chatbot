@@ -18,6 +18,7 @@ export default function Chatbot() {
     const [input, setInput] = useState<string>('');
     const [sessionId, setSessionId] = useState<string>('');
     const [isTyping, setIsTyping] = useState<boolean>(false);
+    const [file, setFile] = useState<File | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -54,7 +55,7 @@ export default function Chatbot() {
     }, [messages]);
 
     const sendMessage = async () => {
-        if (!input.trim() || !sessionId || isTyping) return;
+        if ((!input.trim() && !file) || !sessionId || isTyping) return;
 
         const userMessage: Message = { role: 'user', content: input };
         const newMessages: Message[] = [...messages, userMessage];
@@ -67,18 +68,22 @@ export default function Chatbot() {
         });
 
         setIsTyping(true);
-        setMessages([...newMessages, { role: 'typing', content: 'AI is typing...' }]);
+        setMessages([...newMessages, { role: 'typing', content: 'AI is processing...' }]);
+
+        const formData = new FormData();
+        formData.append("messages", JSON.stringify(newMessages));
+        formData.append("provider", provider);
+        formData.append("model", model);
+        if (file) formData.append("file", file);
 
         try {
             const response = await fetch('/api/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages: newMessages, provider, model }),
+                body: formData,
             });
 
             const data = await response.json();
             let reply = typeof data.reply === 'string' ? data.reply.trim() : "Sorry, I couldn't generate a response.";
-
 
             const updatedMessages: Message[] = [
                 ...newMessages.filter(msg => msg.role !== 'typing'),
@@ -93,6 +98,7 @@ export default function Chatbot() {
                 createdAt: Date.now(),
             });
 
+            setFile(null);
         } catch (error) {
             console.error('❌ Error fetching AI response:', error);
             setMessages([
@@ -103,24 +109,17 @@ export default function Chatbot() {
         }
     };
 
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setFile(event.target.files[0]);
+        }
+    };
+
     const handleKeyPress = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === "Enter") {
             event.preventDefault();
             sendMessage();
         }
-    };
-
-    const clearChatHistory = async () => {
-        if (!sessionId) return;
-
-        const q = query(collection(db, `chats/${sessionId}/messages`));
-        const querySnapshot = await getDocs(q);
-
-        querySnapshot.forEach(async (docSnapshot) => {
-            await deleteDoc(doc(db, `chats/${sessionId}/messages`, docSnapshot.id));
-        });
-
-        setMessages([{ role: 'assistant', content: 'Hello! How can I assist you today?' }]);
     };
 
     return (
@@ -131,7 +130,6 @@ export default function Chatbot() {
                 AI Chatbot 🤖
             </motion.h1>
 
-            {/* AI Provider Selection & Model Display */}
             <div className="mb-4 flex flex-col items-center gap-2">
                 <span className="text-lg font-semibold">Current Model: <span className="text-blue-500">{model}</span></span>
                 <select
@@ -148,7 +146,7 @@ export default function Chatbot() {
                         } else if (selectedProvider === "gemini") {
                             setModel("gemini-1.5-pro-latest");
                         } else if (selectedProvider === "claude") {
-                            setModel("claude-3-5-sonnet-20241022"); // ✅ Ensure this is the correct model
+                            setModel("claude-3-5-sonnet-20241022");
                         }
                     }}
                 >
@@ -157,30 +155,25 @@ export default function Chatbot() {
                     <option value="gemini">Gemini 1.5 Pro</option>
                     <option value="claude">Claude 3.5 Sonnet</option>
                 </select>
-
             </div>
 
-            {/* Refresh Chat Button */}
-            <motion.button className="mb-4 p-2 px-4 rounded-md shadow-md transition hover:opacity-80" style={{ backgroundColor: "#ff4757", color: "white" }} onClick={clearChatHistory} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.button className="mb-4 p-2 px-4 rounded-md shadow-md transition hover:opacity-80" style={{ backgroundColor: "#ff4757", color: "white" }} onClick={() => setMessages([{ role: 'assistant', content: 'Hello! How can I assist you today?' }])}>
                 🔄 Reset Chat
             </motion.button>
 
-            {/* Chatbox */}
-            <motion.div className="w-full max-w-2xl h-[60vh] border p-4 rounded-lg overflow-y-auto transition-colors shadow-md"
-                style={{ backgroundColor: theme === "dark" ? "#1e1e1e" : "#f9f9f9", color: theme === "dark" ? "#e0e0e0" : "#171717", border: theme === "dark" ? "1px solid rgba(255, 255, 255, 0.2)" : "1px solid rgba(0, 0, 0, 0.1)" }}>
+            <motion.div className="w-full max-w-2xl h-[60vh] border p-4 rounded-lg overflow-y-auto transition-colors shadow-md">
                 {messages.map((msg, index) => (
-                    <motion.div key={index} className={`mb-2 p-2 max-w-[80%] rounded-lg transition-all`} style={{ backgroundColor: msg.role === 'user' ? "#007BFF" : "#DDD", color: msg.role === 'user' ? "white" : "black" }}>
+                    <motion.div key={index} className={`mb-2 p-2 max-w-[80%] rounded-lg`} style={{ backgroundColor: msg.role === 'user' ? "#007BFF" : "#DDD", color: msg.role === 'user' ? "white" : "black" }}>
                         {msg.content}
                     </motion.div>
                 ))}
                 <div ref={chatEndRef} />
             </motion.div>
 
-            {/* Input Box */}
-            <motion.div className="mt-4 flex w-full max-w-2xl gap-2" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }}>
+            <motion.div className="mt-4 flex w-full max-w-2xl gap-2">
                 <input ref={inputRef} className="flex-1 p-2 border rounded-md transition-colors" type="text" value={input} onChange={(e) => setInput(e.target.value)} onKeyDown={handleKeyPress} placeholder="Type your message..." />
-
-                <motion.button className="p-2 rounded-md hover:opacity-80 transition" style={{ backgroundColor: "#007BFF", color: "white", opacity: isTyping ? 0.5 : 1 }} onClick={sendMessage} disabled={isTyping} whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <input type="file" className="p-2 border rounded-md" onChange={handleFileChange} />
+                <motion.button className="p-2 rounded-md transition" style={{ backgroundColor: "#007BFF", color: "white" }} onClick={sendMessage} disabled={isTyping}>
                     {isTyping ? '...' : 'Send'}
                 </motion.button>
             </motion.div>
