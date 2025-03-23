@@ -1,7 +1,7 @@
 import { useRouter } from "next/router"
 import Image from "next/image"
 import { motion } from "framer-motion"
-import Navbar from "@/components/Navbar" 
+import Navbar from "@/components/AINavbar" 
 
 export default function Portfolio() {
   const router = useRouter()
@@ -57,7 +57,7 @@ export default function Portfolio() {
           }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => router.push("/chatbot")}
+          onClick={() => router.push("/ai/chatbot")}
           className="cursor-pointer p-4 rounded-lg shadow-md hover:shadow-lg transition"
           style={{
             backgroundColor: "var(--background)",
@@ -73,6 +73,32 @@ export default function Portfolio() {
             className="rounded-lg"
           />
           <p className="text-xl font-semibold mt-2">AI Chatbot</p>
+        </motion.div>
+        
+        {/* AI Form Assistant Component */}
+        <motion.div
+          variants={{
+            hidden: { opacity: 0, y: 20 },
+            visible: { opacity: 1, y: 0 },
+          }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => router.push("/ai/form-assistant")}
+          className="cursor-pointer p-4 rounded-lg shadow-md hover:shadow-lg transition"
+          style={{
+            backgroundColor: "var(--background)",
+            color: "var(--foreground)",
+            border: "1px solid rgba(255, 255, 255, 0.2)"
+          }}
+        >
+          <Image
+            src="/form-assistant-thumbnail.png"
+            alt="Form Assistant"
+            width={300}
+            height={200}
+            className="rounded-lg"
+          />
+          <p className="text-xl font-semibold mt-2">Form Assistant</p>
         </motion.div>
       </motion.div>
     </div>

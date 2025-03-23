@@ -3,7 +3,7 @@ import { useTheme } from "@/context/theme-provider"
 import { AnimatePresence, motion } from "framer-motion"
 import { useState } from "react";
 
-export default function Navbar() {
+export default function AINavbar() {
   const { theme, toggleTheme } = useTheme()
   const [showMenu, setShowMenu] = useState(false);
 
@@ -38,7 +38,7 @@ export default function Navbar() {
                       className="absolute top-full left-0 w-48 bg-white dark:bg-black border rounded-md shadow-md flex flex-col"
                   >
                       {/* Move "My Portfolio" Inside Menu on Mobile */}
-                      <Link href="/">
+                      <Link href="/ai">
                           <span 
                               className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
                               onClick={() => setShowMenu(false)}
@@ -48,12 +48,22 @@ export default function Navbar() {
                       </Link>
 
                       {/* Chatbot Link */}
-                      <Link href="/chatbot">
+                      <Link href="/ai/chatbot">
                           <span 
                               className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
                               onClick={() => setShowMenu(false)}
                           >
                               🤖 Chatbot
+                          </span>
+                      </Link>
+
+                      {/* Form Assistant Link */}
+                      <Link href="/ai/form-assistant">
+                          <span 
+                              className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              onClick={() => setShowMenu(false)}
+                          >
+                              📄 Form Assistant
                           </span>
                       </Link>
                   </motion.div>
@@ -65,15 +75,22 @@ export default function Navbar() {
       <div className="hidden md:flex gap-6 text-lg items-center">
           {/* Portfolio Link (Visible on Desktop) */}
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Link href="/">
+              <Link href="/ai">
                   <span className="cursor-pointer font-bold hover:opacity-80 transition">🚀 My Portfolio</span>
               </Link>
           </motion.div>
 
           {/* Chatbot Link */}
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
-              <Link href="/chatbot">
+              <Link href="/ai/chatbot">
                   <span className="cursor-pointer hover:opacity-80 transition">🤖 Chatbot</span>
+              </Link>
+          </motion.div>
+
+          {/* Form Assistant Link */}
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+              <Link href="/ai/form-assistant">
+                  <span className="cursor-pointer hover:opacity-80 transition">📄 Form Assistant</span>
               </Link>
           </motion.div>
       </div>
