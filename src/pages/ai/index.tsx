@@ -24,7 +24,7 @@ export default function Portfolio() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
       >
-        My AI Components Portfolio ✨
+        My AI Components ✨
       </motion.h1>
 
       <motion.p

@@ -43,7 +43,7 @@ export default function AINavbar() {
                               className="block py-2 px-4 hover:bg-gray-200 dark:hover:bg-gray-700"
                               onClick={() => setShowMenu(false)}
                           >
-                              🚀 My Portfolio
+                              🏠 Home
                           </span>
                       </Link>
 
@@ -76,7 +76,7 @@ export default function AINavbar() {
           {/* Portfolio Link (Visible on Desktop) */}
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Link href="/ai">
-                  <span className="cursor-pointer font-bold hover:opacity-80 transition">🚀 My Portfolio</span>
+                  <span className="cursor-pointer font-bold hover:opacity-80 transition">🏠 Home</span>
               </Link>
           </motion.div>
 
