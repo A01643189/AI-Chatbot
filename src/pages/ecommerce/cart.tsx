@@ -1,4 +1,4 @@
-import { useCartStore } from '@/pages/ecommerce/store/cartStore';
+import { useCartStore } from '@/store/cartStore';
 import { loadStripe } from '@stripe/stripe-js';
 import EcommerceNavbar from '@/components/EcommerceNavbar';
 import Link from "next/link";

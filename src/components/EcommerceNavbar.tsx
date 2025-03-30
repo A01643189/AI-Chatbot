@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCartStore } from "@/pages/ecommerce/store/cartStore";
+import { useCartStore } from "@/store/cartStore";
 import LoginButton from "@/components/ui/LoginButton"; 
 
 export default function EcommerceNavbar() {
