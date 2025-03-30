@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import Stripe from "stripe";
 import { useEffect } from "react";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/pages/ecommerce/store/cartStore";
 import Link from "next/link";
 
 

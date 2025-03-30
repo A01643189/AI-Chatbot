@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useCartStore } from "@/store/cartStore";
+import { useCartStore } from "@/pages/ecommerce/store/cartStore";
+import LoginButton from "@/components/ui/LoginButton"; 
 
 export default function EcommerceNavbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-
   const items = useCartStore((state) => state.items);
   const totalItems = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -19,11 +19,12 @@ export default function EcommerceNavbar() {
       </Link>
 
       {/* Desktop Navigation */}
-      <div className="hidden md:flex gap-6 font-medium text-sm">
+      <div className="hidden md:flex gap-6 items-center font-medium text-sm">
         <Link href="/ecommerce">Home</Link>
         <Link href="/ecommerce/shop">Shop</Link>
         <Link href="/ecommerce/about">About</Link>
         <Link href="/ecommerce/contact">Contact</Link>
+        <LoginButton /> {/* 👈 Desktop login/logout */}
       </div>
 
       {/* Icons */}
@@ -59,7 +60,12 @@ export default function EcommerceNavbar() {
             <Link href="/ecommerce/shop" onClick={() => setMenuOpen(false)}>Shop</Link>
             <Link href="/ecommerce/about" onClick={() => setMenuOpen(false)}>About</Link>
             <Link href="/ecommerce/contact" onClick={() => setMenuOpen(false)}>Contact</Link>
-            <Link href="/ecommerce/cart" onClick={() => setMenuOpen(false)}>Cart {totalItems > 0 && `(${totalItems})`}</Link>
+            <Link href="/ecommerce/cart" onClick={() => setMenuOpen(false)}>
+              Cart {totalItems > 0 && `(${totalItems})`}
+            </Link>
+            <div className="mt-2">
+              <LoginButton /> {/* 👈 Mobile login/logout */}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
