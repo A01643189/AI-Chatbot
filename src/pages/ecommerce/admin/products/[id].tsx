@@ -59,7 +59,7 @@ export default function EditProduct({ product }: Props) {
       body.append("purpose", "dispute_evidence"); // Stripe requires a purpose
 
       const base64Image = await toBase64(file);
-      const uploadRes = await fetch("/api/upload", {
+      const uploadRes = await fetch("/api/admin/products/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image: base64Image }),

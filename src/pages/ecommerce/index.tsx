@@ -1,4 +1,3 @@
-// /src/pages/ecommerce/index.tsx
 import { useEffect, useState } from "react";
 import EcommerceNavbar from "@/components/EcommerceNavbar";
 import Link from "next/link";
@@ -9,6 +8,7 @@ type Product = {
   image: string;
   price: number;
   currency: string;
+  active: boolean;
 };
 
 export default function Home() {
@@ -18,7 +18,8 @@ export default function Home() {
     const loadProducts = async () => {
       const res = await fetch("/api/products");
       const data = await res.json();
-      setProducts(data);
+      const activeProducts = data.filter((product: Product) => product.active);
+      setProducts(activeProducts);
     };
     loadProducts();
   }, []);

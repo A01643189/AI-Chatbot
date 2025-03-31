@@ -2,34 +2,59 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { stripe } from "@/lib/stripe";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== "POST") return res.status(405).end("Method Not Allowed");
-
   const { id } = req.query;
-  const { name, description, image, price } = req.body;
 
-  try {
-    // Update the product details (except price)
-    await stripe.products.update(id as string, {
-      name,
-      description,
-      images: [image],
-    });
+  if (req.method === "POST") {
+    const { name, description, image, price } = req.body;
 
-    // ✅ Create a new price object (prices are immutable)
-    const newPrice = await stripe.prices.create({
-      product: id as string,
-      unit_amount: Math.round(price * 100),
-      currency: "usd",
-    });
+    try {
+      await stripe.products.update(id as string, {
+        name,
+        description,
+        images: [image],
+      });
 
-    // Optionally set the new price as the default
-    await stripe.products.update(id as string, {
-      default_price: newPrice.id,
-    });
+      const newPrice = await stripe.prices.create({
+        product: id as string,
+        unit_amount: Math.round(price * 100),
+        currency: "usd",
+      });
 
-    res.status(200).json({ success: true });
-  } catch (err) {
-    console.error("Stripe update error:", err);
-    res.status(500).json({ error: "Failed to update product" });
+      await stripe.products.update(id as string, {
+        default_price: newPrice.id,
+      });
+
+      res.status(200).json({ success: true });
+    } catch (err) {
+      console.error("Stripe update error:", err);
+      res.status(500).json({ error: "Failed to update product" });
+    }
+  }
+
+  else if (req.method === "DELETE") {
+    try {
+      await stripe.products.update(id as string, { active: false });
+      res.status(200).json({ success: true });
+    } catch (err) {
+      console.error("Stripe delete error:", err);
+      res.status(500).json({ error: "Failed to delete product" });
+    }
+  }
+
+  else if (req.method === "PUT") {
+    const { active } = req.body;
+  
+    try {
+      await stripe.products.update(id as string, { active });
+      return res.status(200).json({ success: true });
+    } catch (err) {
+      console.error("Restore product error:", err);
+      return res.status(500).json({ error: "Unable to restore product" });
+    }
+  }  
+
+  else {
+    res.setHeader("Allow", ["POST", "DELETE"]);
+    res.status(405).end("Method Not Allowed");
   }
 }

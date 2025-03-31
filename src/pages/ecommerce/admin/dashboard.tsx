@@ -10,6 +10,7 @@ type Product = {
   image?: string;
   price: number;
   currency: string;
+  active: boolean;
 };
 
 export default function Dashboard() {
@@ -31,6 +32,40 @@ export default function Dashboard() {
     }
   }, [isAdmin]);
 
+  const handleDelete = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+  
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });    
+  
+    if (res.ok) {
+      setProducts(products.filter(p => p.id !== id));
+    } else {
+      alert("Failed to delete product");
+    }
+  };
+
+  const handleRestore = async (id: string) => {
+    const res = await fetch(`/api/admin/products/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ active: true }),
+    });
+  
+    if (res.ok) {
+      const updated = await res.json();
+      setProducts((prev) =>
+        prev.map((p) => (p.id === id ? { ...p, active: true } : p))
+      );
+    } else {
+      alert("Failed to restore product");
+    }
+  };
+  
   if (status === "loading") return <p className="p-6">Loading...</p>;
 
   return (
@@ -41,7 +76,16 @@ export default function Dashboard() {
 
         {isAdmin ? (
           <div>
-            <h2 className="text-xl font-semibold mb-4">Manage Products</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Manage Products</h2>
+              <button
+                onClick={() => router.push("/ecommerce/admin/products/create")}
+                className="bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                + New Product
+              </button>
+            </div>
+
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-200 dark:bg-gray-700 text-left">
@@ -65,13 +109,30 @@ export default function Dashboard() {
                     <td className="p-2 border">
                       ${(product.price / 100).toFixed(2)} {product.currency.toUpperCase()}
                     </td>
-                    <td className="p-2 border">
-                      <button
-                        onClick={() => router.push(`/ecommerce/admin/products/${product.id}`)}
-                        className="text-blue-600 hover:underline"
-                      >
-                        Edit
-                      </button>
+                      <td className="p-2 border">
+                        {product.active ? (
+                          <>
+                            <button
+                              onClick={() => router.push(`/ecommerce/admin/products/${product.id}`)}
+                              className="text-blue-600 hover:underline"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={() => handleDelete(product.id)}
+                              className="ml-4 text-red-600 hover:underline"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => handleRestore(product.id)}
+                            className="text-green-600 hover:underline"
+                          >
+                            Restore
+                          </button>
+                        )}
                     </td>
                   </tr>
                 ))}

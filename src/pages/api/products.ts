@@ -1,3 +1,4 @@
+// /api/products.ts
 import { stripe } from "@/lib/stripe";
 import type { NextApiRequest, NextApiResponse } from "next";
 import Stripe from "stripe";
@@ -6,6 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const products = await stripe.products.list({
       expand: ["data.default_price"],
+      limit: 100,
     });
 
     const formatted = products.data.map((product) => {
@@ -18,6 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         image: product.images[0],
         price: price.unit_amount,
         currency: price.currency,
+        active: product.active,
       };
     });
 
