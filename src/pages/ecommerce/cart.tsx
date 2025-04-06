@@ -1,6 +1,6 @@
 import { useCartStore } from '@/store/cartStore';
 import { loadStripe } from '@stripe/stripe-js';
-import EcommerceNavbar from '@/components/EcommerceNavbar';
+import EcommerceNavbar from '@/components/ecommerce/EcommerceNavbar';
 import Link from "next/link";
 
 

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from 'react';
 import { collection, addDoc, getDocs, query, orderBy, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useTheme } from '@/context/theme-provider';
-import Navbar from "@/components/AINavbar";
+import Navbar from "@/components/ai/AINavbar";
 import { AnimatePresence, motion } from "framer-motion";
 
 type Message = {

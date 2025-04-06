@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "next/router";
-import EcommerceNavbar from "@/components/EcommerceNavbar";
+import EcommerceNavbar from "@/components/ecommerce/EcommerceNavbar";
 
 export default function CreateProduct() {
   const router = useRouter();

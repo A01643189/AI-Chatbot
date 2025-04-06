@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Navbar from "@/components/AINavbar";
+import Navbar from "@/components/ai/AINavbar";
 
 const initialData = { name: "", email: "", address: "", message: "" };
 

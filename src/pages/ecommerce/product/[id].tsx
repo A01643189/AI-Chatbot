@@ -1,7 +1,7 @@
 import { GetServerSideProps } from "next";
 import { stripe } from "@/lib/stripe";
 import Stripe from "stripe";
-import EcommerceNavbar from "@/components/EcommerceNavbar";
+import EcommerceNavbar from "@/components/ecommerce/EcommerceNavbar";
 import { useCartStore } from '@/store/cartStore';
 
 type ProductPageProps = {
