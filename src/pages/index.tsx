@@ -1,6 +1,7 @@
 import HeroSection from "@/components/portfolio/HeroSection";
 import ProjectsSection from "@/components/portfolio/ProjectsSection";
-import TechStackSection from "@/components/portfolio/TechStackSection";
+import SkillsSection from "@/components/portfolio/SkillsSection";
+import AboutSection from "@/components/portfolio/AboutSection";
 import ContactSection from "@/components/portfolio/ContactSection";
 import PortfolioFooter from "@/components/portfolio/PortfolioFooter";
 import PortfolioNavbar from "@/components/portfolio/PortfolioNavbar";
@@ -12,7 +13,8 @@ export default function PortfolioHome() {
         <PortfolioNavbar />
         <HeroSection />
         <ProjectsSection />
-        <TechStackSection />
+        <SkillsSection />
+        <AboutSection />
         <ContactSection />
         <PortfolioFooter />
       </main>

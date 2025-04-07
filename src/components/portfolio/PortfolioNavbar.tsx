@@ -3,10 +3,9 @@ import { usePathname } from "next/navigation";
 
 const navItems = [
   { name: "Home", href: "/" },
-  { name: "Work", href: "#work" },
+  { name: "Work", href: "#projects" },
+  { name: "Skills", href: "#skills" },
   { name: "About", href: "#about" },
-  { name: "Blog", href: "#blog" },
-  { name: "More", href: "#more" },
 ];
 
 export default function PortfolioNavbar() {
@@ -14,7 +13,7 @@ export default function PortfolioNavbar() {
 
   return (
     <header className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-fit">
-      <nav className="flex items-center gap-6 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 dark:bg-white/5 shadow-md border border-white/20">
+      <nav className="flex items-center gap-3 px-6 py-2 rounded-full backdrop-blur-md bg-white/10 dark:bg-white/5 shadow-md border border-white/20">
         {navItems.map(({ name, href }) => (
           <Link
             key={name}
@@ -33,7 +32,7 @@ export default function PortfolioNavbar() {
           href="#contact"
           className="ml-4 bg-white text-black dark:bg-white/90 dark:text-black px-4 py-1 rounded-full font-semibold shadow hover:opacity-90 transition"
         >
-          Book a Call
+          Let's Connect
         </Link>
       </nav>
     </header>
