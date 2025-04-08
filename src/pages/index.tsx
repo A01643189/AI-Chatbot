@@ -8,7 +8,7 @@ import PortfolioNavbar from "@/components/portfolio/PortfolioNavbar";
 
 export default function PortfolioHome() {
   return (
-    <div className="relative min-h-screen text-white bg-black">
+    <div className="relative min-h-screen text-white bg-black ">
       <main className="relative z-10 space-y-32 scroll-smooth">
         <PortfolioNavbar />
         <HeroSection />
