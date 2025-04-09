@@ -23,7 +23,6 @@ import {
 
 interface ProjectCardProps {
   title: string;
-  subtitle: string;
   description: string[];
   imageUrl: string;
   stack: string[];
@@ -59,7 +58,6 @@ const stackIconMap: Record<string, JSX.Element> = {
 
 export default function ProjectCard({
   title,
-  subtitle,
   description,
   imageUrl,
   stack,
@@ -71,32 +69,26 @@ export default function ProjectCard({
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.1, ease: "easeOut" }}
-        whileHover={{ scale: 1.05 }}
-        className="transition-all duration-300 ease-in-out hover:shadow-xl hover:shadow-white/40 flex flex-col md:flex-row w-full bg-[#0f0f0f] rounded-2xl overflow-hidden border border-neutral-800"
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        whileHover={{ scale: 1.03 }}
+        className="transition-all duration-300 ease-in-out hover:shadow-2xl hover:shadow-white/40 flex flex-col md:flex-row w-full max-w-none bg-[#0f0f0f] rounded-2xl overflow-hidden border border-white/10"
       >
-        {/* Left Gradient Panel */}
-        <div className="md:w-1/2 p-6 bg-white/5 backdrop-blur-sm text-white flex flex-col justify-between">
-          <div>
-            <h3 className="text-xl font-semibold mb-2">{subtitle}</h3>
-            <p className="text-lg font-bold">{title}</p>
-          </div>
-          <div className="mt-6">
-            <Image
-              src={imageUrl}
-              alt={title}
-              width={600}
-              height={400}
-              className="rounded-lg border border-white/20 shadow-lg"
-            />
-          </div>
+        {/* Left Image Panel */}
+        <div className="md:w-1/2 relative bg-white/5 backdrop-blur-md text-white min-h-[550px]">
+          <Image
+            src={imageUrl}
+            alt={title}
+            fill
+            priority
+            className="object-cover w-full h-full"
+          />
         </div>
 
         {/* Right Description Panel */}
-        <div className="md:w-1/2 p-6 flex flex-col justify-between bg-black text-white space-y-4">
+        <div className="md:w-1/2 py-16 px-10 flex flex-col justify-between bg-black text-white space-y-8">
           <div>
-            <h4 className="text-2xl font-bold">{title}</h4>
-            <ul className="list-disc list-inside mt-4 space-y-2 text-sm text-gray-300">
+            <h4 className="text-4xl font-bold">{title}</h4>
+            <ul className="list-disc list-inside mt-6 space-y-4 text-lg text-gray-300">
               {description.map((point, i) => (
                 <li key={i} className="leading-relaxed">
                   {point}
@@ -106,18 +98,18 @@ export default function ProjectCard({
           </div>
 
           {/* Tech stack */}
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-3 mt-6">
             {stack.map((tech, index) => (
               <motion.span
                 key={tech}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{
-                  delay: index * 0.1,
-                  duration: 0.3,
+                  delay: index * 0.06,
+                  duration: 0.25,
                   ease: "easeOut",
                 }}
-                className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-3 py-1 rounded-full text-xs font-medium transition"
+                className="flex items-center gap-2 bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-full text-base font-medium transition"
               >
                 {stackIconMap[tech] ?? null}
                 {tech}
@@ -127,5 +119,6 @@ export default function ProjectCard({
         </div>
       </motion.div>
     </Link>
+
   );
 }
